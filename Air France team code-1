@@ -1,0 +1,560 @@
+---
+title: "Air France Case"
+author: "Team 4"
+date: "13/02/2022"
+output: html_notebook
+---
+
+# LOOKING AND CLEANING THE DATA ----------------------------------
+```{r warning=TRUE}
+#Calling the library to read the excel file
+library(readxl)
+
+#Reading both sheets of the excel with the data
+Air_France <- read_excel("Air France Case Spreadsheet Supplement.xls", 
+                         sheet = "DoubleClick")
+Kayak <- read_excel("Air France Case Spreadsheet Supplement.xls", 
+                    sheet = "Kayak")
+
+# Converting variable names to remove spaces
+names(Air_France) <- gsub(x=names(Air_France), pattern = " ",replacement = "_")
+
+
+#Changing column names
+names(Air_France) <- gsub(x=names(Air_France), pattern = "Total_Cost",replacement = "Media_Cost")
+names(Air_France) <- gsub(x=names(Air_France), pattern = "Engine_Click_Thru_%",replacement = "Perc_Engine_Click_Thru")
+names(Air_France) <- gsub(x=names(Air_France), pattern = "Trans._Conv._%",replacement = "Perc_Trans._Conv.")
+names(Air_France) <- gsub(x=names(Air_France), pattern = "Media_Cost/_Trans.",replacement = "Media_Cost_per_Trans.")
+
+#Looking at the data
+summary(Air_France)
+
+#Checking if there are missing values
+any(is.na(Air_France))
+colSums(is.na(Air_France))
+
+#Replacing na from Bid Statey for no strategy
+Air_France[is.na(Air_France)] <- "No Strategy"
+
+#checking if there are no NA left
+any(is.na(Air_France))
+
+#Transforming Publisher_Name to numeric
+Air_France$Publisher_Name_num<-gsub("Google - Global", "1",Air_France$Publisher_Name)
+Air_France$Publisher_Name_num<-gsub("Google - US", "2",Air_France$Publisher_Name_num)
+Air_France$Publisher_Name_num<-gsub("MSN - Global", "3",Air_France$Publisher_Name_num)
+Air_France$Publisher_Name_num<-gsub("MSN - US", "4",Air_France$Publisher_Name_num)
+Air_France$Publisher_Name_num<-gsub("Overture - Global", "5",Air_France$Publisher_Name_num)
+Air_France$Publisher_Name_num<-gsub("Overture - US", "6",Air_France$Publisher_Name_num)
+Air_France$Publisher_Name_num<-gsub("Yahoo - US", "7",Air_France$Publisher_Name_num)
+Air_France$Publisher_Name_num<-as.numeric(Air_France$Publisher_Name_num)
+
+#Transforming Match_Type to numeric
+Air_France$Match_Type_num <- gsub("Advanced", "1", Air_France$Match_Type)
+Air_France$Match_Type_num <- gsub("Broad", "2", Air_France$Match_Type_num)
+Air_France$Match_Type_num <- gsub("Exact", "3", Air_France$Match_Type_num)
+Air_France$Match_Type_num <- gsub("Standard", "4", Air_France$Match_Type_num)
+Air_France$Match_Type_num<-as.numeric(Air_France$Match_Type_num)
+
+#Transforming Campaign to numeric
+Air_France$Campaign_num<-gsub("Air France Brand & French Destinations", "1",Air_France$Campaign)
+Air_France$Campaign_num<-gsub("Air France Branded", "2",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Air France Global Campaign", "3",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Business Class", "4",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("French Destinations", "5",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("General Terms", "6",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Geo Targeted Atlanta", "7",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Geo Targeted Boston", "8",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Geo Targeted Chicago", "9",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Geo Targeted Cincinnati", "10",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Geo Targeted DC", "11",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Geo Targeted Detroit", "12",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Geo Targeted Houston", "13",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Geo Targeted Los Angeles", "14",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Geo Targeted Miami", "15",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Geo Targeted New York", "16",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Geo Targeted Philadelphia", "17",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Geo Targeted San Francisco", "18",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Geo Targeted Seattle", "19",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Google_Yearlong 2006", "20",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Outside Western Europe", "21",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Paris & France Terms", "22",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Unassigned", "23",Air_France$Campaign_num)
+Air_France$Campaign_num<-gsub("Western Europe Destinations", "24",Air_France$Campaign_num)
+Air_France$Campaign_num<-as.numeric(Air_France$Campaign_num)
+
+#Transforming Bid_Strategy to numeric
+Air_France$Bid_Strategy_num<-gsub("Position 1- 3", "1",Air_France$Bid_Strategy)
+Air_France$Bid_Strategy_num<-gsub("Pos 3-6", "2",Air_France$Bid_Strategy_num)
+Air_France$Bid_Strategy_num<-gsub("Position 1-2 Target", "3",Air_France$Bid_Strategy_num)
+Air_France$Bid_Strategy_num<-gsub("Position 1 -2 Target", "3",Air_France$Bid_Strategy_num)
+Air_France$Bid_Strategy_num<-gsub("Postiion 1-4 Bid Strategy", "4",Air_France$Bid_Strategy_num)
+Air_France$Bid_Strategy_num<-gsub("Position 1-4 Bid Strategy", "4",Air_France$Bid_Strategy_num)
+Air_France$Bid_Strategy_num<-gsub("Position 2-5 Bid Strategy", "5",Air_France$Bid_Strategy_num)
+Air_France$Bid_Strategy_num<-gsub("Position 5-10 Bid Strategy", "6",Air_France$Bid_Strategy_num)
+Air_France$Bid_Strategy_num<-gsub("No Strategy", "7",Air_France$Bid_Strategy_num)
+Air_France$Bid_Strategy_num<-as.numeric(Air_France$Bid_Strategy_num)
+
+#Transforming Status to numeric
+Air_France$Status_num<-gsub("Deactivated", "1",Air_France$Status)
+Air_France$Status_num<-gsub("Unavailable", "2",Air_France$Status_num)
+Air_France$Status_num<-gsub("Paused", "3",Air_France$Status_num)
+Air_France$Status_num<-gsub("Live", "4",Air_France$Status_num)
+Air_France$Status_num<-gsub("Sent", "5",Air_France$Status_num)
+Air_France$Status_num<-as.numeric(Air_France$Status_num)
+```
+
+# GENERIC VISUALIZATION --------------------------------------------
+```{r}
+library(plotly)
+
+pc_data <- Air_France[,c("Publisher_Name","Avg._Cost_per_Click")]
+
+media_spend_pie <- plot_ly(pc_data, labels = ~Publisher_Name, values=~Avg._Cost_per_Click,
+                       type="pie") %>%
+                    layout(title="Average Cost per Click amongst SEM Publishers")
+
+media_spend_pie
+```
+
+# SEPARATING US vs GLOBAL ------------------------------------------------
+```{r}
+Publisher<- Air_France$Publisher_Name_num
+
+#US
+Google_US <- Air_France[which(Publisher==1),]
+MSN_US <- Air_France[which(Publisher==4),]
+Overture_US <- Air_France[which(Publisher==6),]
+
+  #creating a dataframe with all US publishers
+US_df<- rbind(Google_US, MSN_US,Overture_US)
+
+
+#GLOBAL
+Google_global <- Air_France[which(Publisher==2),]
+MSN_global <- Air_France[which(Publisher==3),]
+Overture_global <- Air_France[which(Publisher==5),]
+Yahoo_global <- Air_France[which(Publisher==7),]
+
+  #creating a dataframe with all Global publishers
+Global_df<- rbind(Google_global, MSN_global,Overture_global,Yahoo_global)
+```
+
+# COMPARISON WITH KAYAK ------------------------------------
+```{r}
+#Kayak
+View(Kayak)
+#Renaming variable names in Kayak data frame
+names(Kayak) <- c("Search Engine","Clicks","Media Cost","Total Bookings","Avg Ticket","Total Revenue","Net Revenue")
+
+#Removing rows
+Kayak <- Kayak[-c(1,2,4,5), ]
+
+# Converting variable names to remove spaces
+names(Kayak) <- gsub(x=names(Kayak), pattern = " ",replacement = "_")
+
+# for loop to change data types for col 2:7 in compare_kayak df
+for(i in 2:7){
+  Kayak[,i] <- as.numeric(Kayak[,i])
+} # closing for loop
+
+```
+
+# ROI ---------------------------------------------------------
+```{r}
+#UDF
+ROI<-function(x,y,z){
+  rev<-sum(y)
+  cost<-sum(z)
+  roi<-(rev-cost)/cost
+  return(roi)
+}#closing udf
+
+#US
+  #Google
+Google_US_ROI<-ROI(x=Google_US, y=Google_US$Amount, z=Google_US$Media_Cost)
+  #MSN
+MSN_US_ROI<-ROI(x=MSN_US, y=MSN_US$Amount, z=MSN_US$Media_Cost)
+  #Overture
+Overture_US_ROI<-ROI(x=Overture_US, y=Overture_US$Amount, z=Overture_US$Media_Cost)
+
+#GLOBAL
+  #Google
+Google_global_ROI<-ROI(x=Google_global, y=Google_global$Amount, z=Google_global$Media_Cost)
+  #MSN
+MSN_global_ROI<-ROI(x=MSN_global, y=MSN_global$Amount, z=MSN_global$Media_Cost)
+  #Overture
+Overture_global_ROI<-ROI(x=Overture_global, y=Overture_global$Amount, z=Overture_global$Media_Cost)
+  #Yahoo
+Yahoo_global_ROI<-ROI(x=Yahoo_global, y=Yahoo_global$Amount, z=Yahoo_global$Media_Cost)
+
+#KAYAK
+Kayak_ROI<-ROI(x=Kayak, y=Kayak$Total_Revenue, z=Kayak$Media_Cost)
+
+#PLOT
+#install package for colors
+install.packages("viridis")
+library(viridis)
+
+#US
+ROI_compare_us_new <- as.data.frame(c()) 
+ROI_compare_us_new <- data.frame(Google_US_ROI = c(Google_US_ROI),
+                             MSN_US_ROI = c(MSN_US_ROI),
+                             Overture_US_ROI = c(Overture_US_ROI),
+                            Kayak_ROI = c(Kayak_ROI))
+        
+slices <- c(slices <- c(Google_US_ROI,MSN_US_ROI,Overture_US_ROI,Kayak_ROI))
+lbls<- c("Google US","MSN US","Overture US","Kayak")
+
+plot_US_ROI<- pie(slices,labels = lbls,col = plasma(length(lbls)),main = "ROI US comparison")
+
+#GLOBAL
+ROI_compare_global_new <- as.data.frame(c()) 
+ROI_compare_global_new <- data.frame(Google_global_ROI = c(Google_global_ROI),
+                             MSN_global_ROI = c(MSN_global_ROI),
+                             Overture_global_ROI = c(Overture_global_ROI),
+                             Yahoo_global_ROI = c(Yahoo_global_ROI),
+                             Kayak_ROI = c(Kayak_ROI))
+        
+slices <- c(slices <- c(Google_global_ROI,MSN_global_ROI,Overture_global_ROI,Yahoo_global_ROI,Kayak_ROI))
+lbls<- c("Google global","MSN global","Overture global","Yahoo global", "Kayak")
+
+plot_Global_ROI<- pie(slices,labels = lbls,col = plasma(length(lbls)),main = "ROI Global comparison")
+```
+
+# ROA ---------------------------------------------------------
+```{r}
+#UDF
+ROA<-function(x,y,z){
+  rev<-sum(y)
+  cost<-sum(z)
+  roa<-rev/cost
+  return(roa)
+}#closing udf
+
+#US
+  #Google
+Google_US_ROA<-ROA(x=Google_US, y=Google_US$Amount, z=Google_US$Media_Cost)
+  #MSN
+MSN_US_ROA<-ROA(x=MSN_US, y=MSN_US$Amount, z=MSN_US$Media_Cost)
+  #Overture
+Overture_US_ROA<-ROA(x=Overture_US, y=Overture_US$Amount, z=Overture_US$Media_Cost)
+
+#GLOBAL
+  #Google
+Google_global_ROA<-ROA(x=Google_global, y=Google_global$Amount, z=Google_global$Media_Cost)
+  #MSN
+MSN_global_ROA<-ROA(x=MSN_global, y=MSN_global$Amount, z=MSN_global$Media_Cost)
+  #Overture
+Overture_global_ROA<-ROA(x=Overture_global, y=Overture_global$Amount, z=Overture_global$Media_Cost)
+  #Yahoo
+Yahoo_global_ROA<-ROA(x=Yahoo_global, y=Yahoo_global$Amount, z=Yahoo_global$Media_Cost)
+
+#KAYAK
+Kayak_ROA<-ROA(x=Kayak, y=Kayak$Total_Revenue, z=Kayak$Media_Cost)
+
+#PLOT
+#US
+ROA_compare_us_new <- as.data.frame(c()) 
+ROA_compare_us_new <- data.frame(Google_US_ROA = c(Google_US_ROA),
+                             MSN_US_ROA = c(MSN_US_ROA),
+                             Overture_US_ROA = c(Overture_US_ROA),
+                             Kayak_ROA = c(Kayak_ROA))
+        
+slices <- c(slices <- c(Google_US_ROA,MSN_US_ROA,Overture_US_ROA,Kayak_ROA))
+lbls<- c("Google US","MSN US","Overture US","Kayak")
+
+plot_US_ROA<- pie(slices,labels = lbls,col = magma(length(lbls)),main = "ROA US comparison")
+
+#GLOBAL
+ROA_compare_global_new <- as.data.frame(c()) 
+ROA_compare_global_new <- data.frame(Google_global_ROA = c(Google_global_ROA),
+                             MSN_global_ROA = c(MSN_global_ROA),
+                             Overture_global_ROA = c(Overture_global_ROA),
+                             Yahoo_global_ROA = c(Yahoo_global_ROA),
+                             Kayak_ROA = c(Kayak_ROA))
+        
+slices <- c(slices <- c(Google_global_ROA,MSN_global_ROA,Overture_global_ROA,Yahoo_global_ROA,Kayak_ROA))
+lbls<- c("Google global","MSN global","Overture global","Yahoo global", "Kayak")
+
+plot_Global_ROA<- pie(slices,labels = lbls,col = magma(length(lbls)),main = "ROA Global comparison")
+```
+
+# AVERAGE COST PER CLICK ---------------------------------
+```{r}
+#US
+  #Google
+Google_US_CpC<-mean(Google_US$Avg._Cost_per_Click)
+  #MSN
+MSN_US_CpC<-mean(MSN_US$Avg._Cost_per_Click)
+  #Overture
+Overture_US_CpC<-mean(Overture_US$Avg._Cost_per_Click)
+
+#GLOBAL
+  #Google
+Google_global_CpC<-mean(Google_global$Avg._Cost_per_Click)
+  #MSN
+MSN_global_CpC<-mean(MSN_global$Avg._Cost_per_Click)
+  #Overture
+Overture_global_CpC<-mean(Overture_global$Avg._Cost_per_Click)
+  #Yahoo
+Yahoo_global_CpC<-mean(Yahoo_global$Avg._Cost_per_Click)
+
+#KAYAK
+Kayak_CpC<-Kayak$Media_Cost / Kayak$Clicks
+
+#PLOT
+#US
+CpC_compare_us_new <- as.data.frame(c()) 
+CpC_compare_us_new <- data.frame(Google_US_CpC = c(Google_US_CpC),
+                             MSN_US_CpC = c(MSN_US_CpC),
+                             Overture_US_CpC = c(Overture_US_CpC),
+                             Kayak_CpC = c(Kayak_CpC))
+        
+slices <- c(slices <- c(Google_US_CpC,MSN_US_CpC,Overture_US_CpC,Kayak_CpC))
+lbls<- c("Google US","MSN US","Overture US","Kayak")
+
+plot_US_CpC<- pie(slices,labels = lbls,col = inferno(length(lbls)),main = "Cost per Click US comparison")
+
+#GLOBAL
+CpC_compare_global_new <- as.data.frame(c()) 
+CpC_compare_global_new <- data.frame(Google_global_CpC = c(Google_global_CpC),
+                             MSN_global_CpC = c(MSN_global_CpC),
+                             Overture_global_CpC = c(Overture_global_CpC),
+                             Yahoo_global_CpC = c(Yahoo_global_CpC),
+                             Kayak_CpC = c(Kayak_CpC))
+        
+slices <- c(slices <- c(Google_global_CpC,MSN_global_CpC,Overture_global_CpC,Yahoo_global_CpC,Kayak_CpC))
+lbls<- c("Google global","MSN global","Overture global","Yahoo global", "Kayak")
+
+plot_Global_CpC<- pie(slices,labels = lbls,col = inferno(length(lbls)),main = "Cost per Click Global comparison")
+```
+
+# KEYWORDS --------------------------------------------------
+```{r}
+#Importing package dplyr for data mining
+install.packages("dplyr")
+#Reading the library
+library(dplyr)
+
+#US
+keywords_US<- US_df %>%
+  group_by(Publisher_Name) %>%
+  select(Publisher_Name,Clicks,Impressions,Total_Volume_of_Bookings,Perc_Engine_Click_Thru,Amount) %>%
+  summarise(sum(Clicks),
+            sum(Impressions),
+            sum(Total_Volume_of_Bookings),
+            sum(Perc_Engine_Click_Thru),
+            sum(Amount)) %>%
+  arrange(desc(Publisher_Name))
+keywords_US
+  
+#GLOBAL
+keywords_Global<- Global_df %>%
+  group_by(Publisher_Name) %>%
+  select(Publisher_Name,Clicks,Impressions,Total_Volume_of_Bookings,Perc_Engine_Click_Thru,Amount) %>%
+  summarise(sum(Clicks),
+            sum(Impressions),
+            sum(Total_Volume_of_Bookings),
+            sum(Perc_Engine_Click_Thru),
+            sum(Amount)) %>%
+  arrange(desc(Publisher_Name))
+keywords_Global
+```
+
+# REGRESSION -------------------------------------------------------
+```{r warning=FALSE}
+#Creating new empty vector to store the data
+Air_France$booking <- c()
+
+#For loop to determine whether there's booking or not
+for(i in 1:nrow(Air_France)){
+  if (Air_France$Total_Volume_of_Bookings[i] == 0){
+    Air_France$booking[i] <- c(0)
+  } else{
+    Air_France$booking[i] <- c(1)
+  }#closing conditional statement
+}#Closing for loop
+
+#Random Sampling into Training and Testing
+#STEP1
+training_idx<-sample(1:nrow(Air_France),size=0.8*nrow(Air_France))
+#STEP2
+training_df<-Air_France[training_idx,]
+testing_df<-Air_France[-training_idx,]
+
+#Running logistic regression model
+my_logit <- glm(booking ~ Clicks+Impressions,
+                      data=training_df, family="binomial")
+
+#Looking at the results
+summary(my_logit)
+```
+
+# NORMALIZED REGRESSION ------------------------------------------
+```{r warning=FALSE}
+#Normalizing the data using maxmin
+#creating a udf to normalize the variables
+normalization<- function(var1){
+  my_norm<-(var1-min(var1))/(max(var1)-min(var1))
+  return(my_norm)
+}#closing the udf
+
+#Creating normalized variables
+Air_France$Search_Engine_Bid_norm<-normalization(var1=Air_France$Search_Engine_Bid)
+Air_France$Clicks_norm<-normalization(var1=Air_France$Clicks)
+Air_France$Click_Charges_norm<-normalization(var1=Air_France$Click_Charges)
+Air_France$Avg._Cost_per_Click_norm<-normalization(var1=Air_France$Avg._Cost_per_Click)
+Air_France$Impressions_norm<-normalization(var1=Air_France$Impressions)
+Air_France$Perc_Engine_Click_Thru_norm<-normalization(var1=Air_France$Perc_Engine_Click_Thru)
+Air_France$Avg._Pos._norm<-normalization(var1=Air_France$Avg._Pos.)
+Air_France$Perc_Trans._Conv._norm<-normalization(var1=Air_France$Perc_Trans._Conv.)
+Air_France$Media_Cost_per_Trans._norm<-normalization(var1=Air_France$Media_Cost_per_Trans.)
+Air_France$Amount_norm<-normalization(var1=Air_France$Amount)
+Air_France$Media_Cost_norm<-normalization(var1=Air_France$Media_Cost)
+Air_France$Total_Volume_of_Bookings_norm<-normalization(var1=Air_France$Total_Volume_of_Bookings)
+
+#Random Sampling into Training and Testing with Normalized Variables
+#STEP1
+training_idx_norm<-sample(1:nrow(Air_France),size=0.8*nrow(Air_France))
+#STEP2
+training_df_norm<-Air_France[training_idx_norm,]
+testing_df_norm<-Air_France[-training_idx_norm,]
+
+#Running logistic regression model
+my_logit_norm <- glm(booking ~ Search_Engine_Bid_norm+Clicks_norm+Click_Charges_norm+Avg._Cost_per_Click_norm+
+                       Impressions_norm+Avg._Pos._norm+Media_Cost_per_Trans._norm+Amount_norm,
+                      data=training_df_norm, family="binomial")
+
+#Looking at the results
+summary(my_logit_norm)
+
+```
+
+# DECISION TREE -------------------------------------------------------
+```{r}
+#Importing packages for the decision tree
+install.packages("mlbench")
+install.packages("rpart")
+install.packages("rpart.plot")
+library(mlbench)
+library(rpart)
+library(rpart.plot)
+
+# Note Lower CP = Bigger Tree Higher CP = Smaller Tree
+my_tree <- rpart(booking ~ Clicks + Impressions, 
+                         data = testing_df, method = "class",
+                         control=rpart.control(minsplit=20, minbucket =10, cp=0.001))
+
+# Plot decision tree
+rpart.plot(my_tree, type=1, extra=4)
+```
+
+# AUC-ROC -------------------------------------------------------
+```{r}
+#Importing packages for the AUC-ROC
+install.packages("ROCR")
+install.packages("caret")
+install.packages("e1071")
+library(ROCR)
+library(caret)
+library(e1071)
+
+#Need to convert my prediction with prediction() function so ROCR understands it
+prediction_keyword <- predict(my_logit, testing_df, type="response")
+prediction_logit <- prediction(prediction_keyword, testing_df$booking)
+
+#Runs 20-30 matrices at different levels of p levels
+performance_logit <- performance(prediction_logit,"tpr","fpr")
+
+#Code series to gather information to display the performance of the decision tree model
+my_tree_predict <- predict(my_tree, testing_df, type="prob")
+my_tree_prediction <- prediction(my_tree_predict[,2],
+                                     testing_df$booking)
+my_tree_performance <- performance(my_tree_prediction,"tpr","fpr")
+
+#Plotting AUC ROC
+plot(my_tree_performance,col="blue", lty=1, lwd=1)
+plot(performance_logit, col="darkgreen",add=T)
+```
+
+
+# REGRESSION -------------------------------------------------------
+```{r warning=FALSE}
+# OJBECTIVE:determine whether there's profit or not
+
+#Creating a variable for profit
+Air_France$prf <- Air_France$Amount - Air_France$Media_Cost
+
+#Creating new empty vector to store the data
+Air_France$Profit <- c()
+
+#For loop to determine whether there's profit or not
+for(i in 1:nrow(Air_France)){
+  if (Air_France$prf[i] > 0){
+    Air_France$Profit[i] <- "1"
+  } else{
+    Air_France$Profit[i] <- "0"
+  }#closing conditional statement
+}#Closing for loop
+Air_France$Profit<-as.numeric(Air_France$Profit)
+
+#Random Sampling into Training and Testing
+#STEP1
+train_idx<-sample(1:nrow(Air_France),size=0.8*nrow(Air_France))
+#STEP2
+train_df<-Air_France[train_idx,]
+test_df<-Air_France[-train_idx,]
+
+#Running logistic regression model
+logit <- glm(Profit ~ Clicks+Impressions+
+                    Click_Charges+Avg._Pos.,
+                      data=train_df, family="binomial")
+
+#Looking at the results
+summary(logit)
+```
+
+# NORMALIZED REGRESSION ------------------------------------------
+```{r warning=FALSE}
+#Running logistic regression model
+logit_norm <- glm(Profit ~ Avg._Cost_per_Click_norm+Clicks_norm+Impressions_norm+
+                    Click_Charges_norm+Avg._Pos._norm,
+                      data=train_df, family="binomial")
+
+#Looking at the results
+summary(logit_norm)
+
+```
+
+# DECISION TREE -------------------------------------------------------
+```{r}
+# Note Lower CP = Bigger Tree Higher CP = Smaller Tree
+tree <- rpart(Profit ~ Avg._Cost_per_Click+Clicks+Impressions+
+                    Click_Charges+Avg._Pos., 
+                         data = test_df, method = "class",
+                         control=rpart.control(minsplit=15, minbucket =10, cp=0.005))
+
+# Plot decision tree
+rpart.plot(tree, type=1, extra=4)
+```
+
+# AUC-ROC -------------------------------------------------------
+```{r}
+#Converting the predictions
+prediction_profit <- predict(logit, test_df, type="response")
+pred_logit <- prediction(prediction_profit, test_df$Profit)
+
+perf_logit <- performance(pred_logit,"tpr","fpr")
+
+#Displaying the performance
+tree_predict <- predict(tree, test_df, type="prob")
+tree_prediction <- prediction(tree_predict[,2],
+                                     test_df$Profit)
+tree_performance <- performance(tree_prediction,"tpr","fpr")
+
+#Plotting AUC ROC
+plot(tree_performance,col="red", lty=1, lwd=1)
+plot(perf_logit, col="purple",add=T)
+```
+
